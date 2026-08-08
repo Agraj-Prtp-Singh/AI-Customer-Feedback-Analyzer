@@ -1,6 +1,7 @@
 import requests
 import os
 import json
+from datetime import datetime
 
 
 def get_nps_category(score):
@@ -27,11 +28,42 @@ def create_follow_up_task(score, feedback):
     }
      
 
+def _cleanup_ai_content(content):
+    if not isinstance(content, str):
+        return ""
+
+    text = content.strip()
+
+    if text.startswith("```") and text.endswith("```"):
+        text = text[3:-3].strip()
+
+        if text.lower().startswith("json"):
+            text = text[text.find("\n") + 1 :].strip()
+
+    return text
+
+
+def _extract_json_payload(text):
+    text = _cleanup_ai_content(text)
+
+    if text.startswith("{") and text.endswith("}"):
+        return text
+
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        return text[start : end + 1].strip()
+
+    return text
+
+
 def analyze_feedback(score, feedback):
 
     nps_category = get_nps_category(score)
 
     api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise Exception("OPENROUTER_API_KEY is not configured")
 
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
@@ -67,24 +99,37 @@ def analyze_feedback(score, feedback):
         }
     )
 
-    data = response.json()
+    try:
+        data = response.json()
+    except ValueError:
+        raise Exception(
+            f"OpenRouter returned non-JSON response (status {response.status_code}): {response.text!r}"
+        )
 
     if response.status_code != 200:
-            raise Exception(
-        f"OpenRouter API error: {data.get('error', {}).get('message', 'Unknown error')}"
-    )
+        raise Exception(
+            f"OpenRouter API error ({response.status_code}): {data.get('error', {}).get('message', response.text)}"
+        )
 
-    content = data["choices"][0]["message"]["content"]
+    content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+    cleaned_content = _extract_json_payload(content)
 
     print("AI RESPONSE:")
     print(repr(content))
 
+    if not cleaned_content:
+        raise Exception(
+            f"AI returned empty JSON response; raw content: {repr(content)}"
+        )
+
     try:
-        analysis = json.loads(content)
+        analysis = json.loads(cleaned_content)
     except json.JSONDecodeError:
         print("INVALID JSON FROM AI:")
         print(repr(content))
-        raise Exception("AI returned invalid JSON")
+        print("CLEANED JSON ATTEMPT:")
+        print(repr(cleaned_content))
+        raise Exception(f"AI returned invalid JSON: {repr(cleaned_content)}")
 
     follow_up = create_follow_up_task(score, feedback)
 
@@ -95,8 +140,8 @@ def analyze_feedback(score, feedback):
         "theme": analysis["theme"],
         "root_cause": analysis["root_cause"],
         "priority": analysis["priority"],
-        "follow_up": follow_up
+        "follow_up": follow_up,
+        "created_at": datetime.utcnow().isoformat()
     }
-
 
     return result

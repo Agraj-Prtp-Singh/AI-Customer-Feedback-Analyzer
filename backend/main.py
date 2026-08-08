@@ -43,7 +43,7 @@ def analyze(data: FeedbackRequest):
 @app.get("/feedback")
 def get_feedback():
 
-    feedback = list(feedback_collection.find())
+    feedback = list(feedback_collection.find().sort("created_at", -1))
 
     for item in feedback:
         item["id"] = str(item["_id"])
