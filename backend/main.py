@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 from services.ai_analyzer import analyze_feedback
@@ -10,8 +10,8 @@ app = FastAPI()
 
 
 class FeedbackRequest(BaseModel):
-    score: int
-    feedback: str
+    score: int = Field(..., ge=0, le=10)
+    feedback: str = Field(..., min_length=5)
 
 
 @app.get("/")
