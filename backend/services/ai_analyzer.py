@@ -12,6 +12,21 @@ def get_nps_category(score):
         return "Detractor"
 
 
+def create_follow_up_task(score, feedback):
+    if score <= 6:
+        return {
+            "follow_up_required": True,
+            "task": "Contact customer regarding negative feedback",
+            "sla": "2 working days"
+        }
+
+    return {
+        "follow_up_required": False,
+        "task": None,
+        "sla": None
+    }
+     
+
 def analyze_feedback(score, feedback):
 
     nps_category = get_nps_category(score)
@@ -63,13 +78,17 @@ def analyze_feedback(score, feedback):
 
     analysis = json.loads(content)
 
+    follow_up = create_follow_up_task(score, feedback)
+
     result = {
         "score": score,
         "nps_category": nps_category,
         "sentiment": analysis["sentiment"],
         "theme": analysis["theme"],
         "root_cause": analysis["root_cause"],
-        "priority": analysis["priority"]
+        "priority": analysis["priority"],
+        "follow_up": follow_up
     }
+
 
     return result
