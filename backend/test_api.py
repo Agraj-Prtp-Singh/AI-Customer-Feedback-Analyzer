@@ -1,6 +1,7 @@
 import requests
 from dotenv import load_dotenv
 import os
+import json
 
 load_dotenv()
 
@@ -18,18 +19,24 @@ response = requests.post(
             {
                 "role": "user",
                 "content": """
-Analyze this customer feedback:
+                Analyze the following customer feedback:
 
-"The delivery was two weeks late and nobody from our account
-team responded to my emails."
+                "The delivery was two weeks late and nobody from our account
+                team responded to my emails."
 
-Tell me:
+                Return ONLY valid JSON.
 
-1. Sentiment
-2. Main theme
-3. Root cause
-4. Priority
-"""
+                Use exactly these fields:
+
+                {
+                    "sentiment": "positive, neutral, or negative",
+                    "theme": "main issue category",
+                    "root_cause": "underlying reason for the problem",
+                    "priority": "low, medium, or high"
+                }
+
+                Do not include any explanation outside the JSON.
+                """
             }
         ]
     }
@@ -37,4 +44,8 @@ Tell me:
 
 data = response.json()
 
-print(data["choices"][0]["message"]["content"])
+content = data["choices"][0]["message"]["content"]
+
+analysis = json.loads(content)
+
+print(analysis)
