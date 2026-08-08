@@ -9,12 +9,13 @@ def get_nps_category(score):
         return "Promoter"
     elif score >= 7:
         return "Passive"
-    else: 
+    else:
         return "Detractor"
 
 
+score = 4
+nps_category = get_nps_category(score)
 
-    
 load_dotenv()
 
 api_key = os.getenv("OPENROUTER_API_KEY")
@@ -60,14 +61,13 @@ content = data["choices"][0]["message"]["content"]
 
 analysis = json.loads(content)
 
-print(analysis)
+result = {
+    "score": score,
+    "nps_category": nps_category,
+    "sentiment": analysis["sentiment"],
+    "theme": analysis["theme"],
+    "root_cause": analysis["root_cause"],
+    "priority": analysis["priority"]
+}
 
-
-print(analysis["sentiment"])
-print(analysis["theme"])
-print(analysis["root_cause"])
-print(analysis["priority"])
-
-print(get_nps_category(10))
-print(get_nps_category(8))
-print(get_nps_category(4))
+print(result)
