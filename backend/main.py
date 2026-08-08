@@ -43,11 +43,10 @@ def analyze(data: FeedbackRequest):
 @app.get("/feedback")
 def get_feedback():
 
-    feedback = list(
-        feedback_collection.find(
-            {},
-            {"_id": 0}
-        )
-    )
+    feedback = list(feedback_collection.find())
+
+    for item in feedback:
+        item["id"] = str(item["_id"])
+        del item["_id"]
 
     return feedback
