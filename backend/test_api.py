@@ -3,6 +3,18 @@ from dotenv import load_dotenv
 import os
 import json
 
+
+def get_nps_category(score):
+    if score >= 9:
+        return "Promoter"
+    elif score >= 7:
+        return "Passive"
+    else: 
+        return "Detractor"
+
+
+
+    
 load_dotenv()
 
 api_key = os.getenv("OPENROUTER_API_KEY")
@@ -49,3 +61,13 @@ content = data["choices"][0]["message"]["content"]
 analysis = json.loads(content)
 
 print(analysis)
+
+
+print(analysis["sentiment"])
+print(analysis["theme"])
+print(analysis["root_cause"])
+print(analysis["priority"])
+
+print(get_nps_category(10))
+print(get_nps_category(8))
+print(get_nps_category(4))
