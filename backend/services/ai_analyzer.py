@@ -76,7 +76,15 @@ def analyze_feedback(score, feedback):
 
     content = data["choices"][0]["message"]["content"]
 
-    analysis = json.loads(content)
+    print("AI RESPONSE:")
+    print(repr(content))
+
+    try:
+        analysis = json.loads(content)
+    except json.JSONDecodeError:
+        print("INVALID JSON FROM AI:")
+        print(repr(content))
+        raise Exception("AI returned invalid JSON")
 
     follow_up = create_follow_up_task(score, feedback)
 
