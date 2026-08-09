@@ -2,6 +2,7 @@ import requests
 import os
 import json
 from datetime import datetime, timedelta
+from services.sla import add_working_days
 
 
 def get_nps_category(score):
@@ -17,7 +18,7 @@ def create_follow_up_task(score, feedback):
     if score <= 6:
 
         created_at = datetime.utcnow()
-        due_at = created_at + timedelta(days=2)
+        due_at = add_working_days(created_at, 2)
 
         return {
             "follow_up_required": True,
