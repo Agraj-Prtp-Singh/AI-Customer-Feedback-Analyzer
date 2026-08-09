@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, X } from "lucide-react";
+import { Eye, X, Trash2 } from "lucide-react";
 import api from "../services/api";
 
 export default function FeedbackHistory() {
@@ -13,6 +13,26 @@ export default function FeedbackHistory() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const itemsPerPage = 10;
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this feedback?",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/feedback/${id}`);
+
+      setFeedback((prev) => prev.filter((item) => item.id !== id));
+
+      if (selectedFeedback?.id === id) {
+        setSelectedFeedback(null);
+      }
+    } catch (error) {
+      console.error("Error deleting feedback:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchFeedback = async () => {
@@ -178,13 +198,23 @@ export default function FeedbackHistory() {
                   </td>
 
                   <td className="px-6 py-4">
-                    <button
-                      onClick={() => setSelectedFeedback(item)}
-                      className="flex items-center gap-2 rounded-lg bg-black px-3 py-2 text-sm text-white hover:bg-gray-800"
-                    >
-                      <Eye size={16} />
-                      View
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedFeedback(item)}
+                        className="flex items-center gap-2 rounded-lg bg-black px-3 py-2 text-sm text-white hover:bg-gray-800"
+                      >
+                        <Eye size={16} />
+                        View
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
+                        title="Delete feedback"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

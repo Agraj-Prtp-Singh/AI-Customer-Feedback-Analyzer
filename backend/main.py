@@ -29,7 +29,7 @@ app.add_middleware(
 
 class FeedbackRequest(BaseModel):
     score: int = Field(..., ge=0, le=10)
-    feedback: str = Field(..., min_length=5)
+    feedback: str = Field(..., min_length=5, max_length=2000)
 
 
 @app.get("/")
@@ -178,3 +178,27 @@ def ai_insights():
 @app.get("/analytics/trend")
 def analytics_trend():
     return get_nps_trend()
+
+
+@app.delete("/feedback/{feedback_id}")
+def delete_feedback(feedback_id: str):
+    try:
+        result = feedback_collection.delete_one(
+            {"_id": ObjectId(feedback_id)}
+        )
+
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=404,
+                detail="Feedback not found"
+            )
+
+        return {
+            "message": "Feedback deleted successfully"
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
