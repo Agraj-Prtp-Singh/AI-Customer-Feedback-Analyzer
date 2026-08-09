@@ -10,6 +10,9 @@ export default function FeedbackHistory() {
   const [priorityFilter, setPriorityFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchFeedback = async () => {
@@ -26,6 +29,34 @@ export default function FeedbackHistory() {
     fetchFeedback();
   }, []);
 
+  const filteredFeedback = feedback.filter((item) => {
+    const matchesSearch = (item.feedback || "")
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesCategory =
+      categoryFilter === "All" || item.nps_category === categoryFilter;
+
+    const matchesSentiment =
+      sentimentFilter === "All" || item.sentiment === sentimentFilter;
+
+    const matchesPriority =
+      priorityFilter === "All" || item.priority === priorityFilter;
+
+    return (
+      matchesSearch && matchesCategory && matchesSentiment && matchesPriority
+    );
+  });
+
+  const totalPages = Math.ceil(filteredFeedback.length / itemsPerPage);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+
+  const paginatedFeedback = filteredFeedback.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
+
   if (loading) {
     return <div className="p-8">Loading feedback...</div>;
   }
@@ -40,6 +71,49 @@ export default function FeedbackHistory() {
           <p className="mt-1 text-gray-500">
             View and analyze all customer feedback
           </p>
+        </div>
+        {/* Search Feedback */}
+        <div className="mt-8 grid gap-3 md:grid-cols-4">
+          <input
+            type="text"
+            placeholder="Search feedback..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:border-black"
+          />
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none"
+          >
+            <option value="All">All NPS Categories</option>
+            <option value="Promoter">Promoter</option>
+            <option value="Passive">Passive</option>
+            <option value="Detractor">Detractor</option>
+          </select>
+
+          <select
+            value={sentimentFilter}
+            onChange={(e) => setSentimentFilter(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none"
+          >
+            <option value="All">All Sentiments</option>
+            <option value="positive">Positive</option>
+            <option value="neutral">Neutral</option>
+            <option value="negative">Negative</option>
+          </select>
+
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm outline-none"
+          >
+            <option value="All">All Priorities</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
         </div>
 
         {/* Table */}
@@ -74,7 +148,7 @@ export default function FeedbackHistory() {
             </thead>
 
             <tbody>
-              {feedback.map((item) => (
+              {paginatedFeedback.map((item) => (
                 <tr
                   key={item.id}
                   className="border-b border-gray-100 last:border-0"
@@ -117,9 +191,9 @@ export default function FeedbackHistory() {
             </tbody>
           </table>
 
-          {feedback.length === 0 && (
+          {filteredFeedback.length === 0 && (
             <div className="p-10 text-center text-sm text-gray-500">
-              No feedback found.
+              No feedback matches your filters.
             </div>
           )}
         </div>
