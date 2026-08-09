@@ -5,6 +5,7 @@ import StatCard from "./StatCard";
 import FeedbackForm from "./FeedbackForm";
 import RecentFeedback from "./RecentFeedback";
 import AIInsights from "./AiInsight";
+import PageHeader from "./PageHeader";
 
 import {
   PieChart,
@@ -76,24 +77,11 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen p-8">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-black p-3">
-              <BarChart3 className="text-white" size={24} />
-            </div>
-
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Customer Feedback Analytics
-              </h1>
-
-              <p className="mt-1 text-gray-500">
-                AI-powered NPS feedback analysis
-              </p>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          title="Customer Feedback Analytics"
+          description="AI-powered NPS feedback analysis"
+          icon={BarChart3}
+        />
 
         {/* Feedback Form */}
         <div className="mb-8">
@@ -312,7 +300,9 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
       </div>
-      <AIInsights />
+      <div className="mt-7">
+        <AIInsights />
+      </div>
     </main>
   );
 }

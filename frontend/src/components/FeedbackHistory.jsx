@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { Eye, X, Trash2 } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import api from "../services/api";
+import DetailDrawer from "./DetailDrawer";
+import PageHeader from "./PageHeader";
 
 export default function FeedbackHistory() {
   const [feedback, setFeedback] = useState([]);
@@ -89,14 +91,10 @@ export default function FeedbackHistory() {
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Feedback History</h1>
-
-          <p className="mt-1 text-gray-500">
-            View and analyze all customer feedback
-          </p>
-        </div>
+        <PageHeader
+          title="Feedback History"
+          description="View and analyze all customer feedback"
+        />
         {/* Search Feedback */}
         <div className="mt-8 grid gap-3 md:grid-cols-4">
           <input
@@ -236,30 +234,11 @@ export default function FeedbackHistory() {
 
       {/* Detail Drawer */}
       {selectedFeedback && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
-          <div className="h-full w-full max-w-lg overflow-y-auto bg-white shadow-xl">
-            {/* Header */}
-            <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-5">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Feedback Details
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Complete AI analysis
-                </p>
-              </div>
-
-              <button
-                onClick={() => setSelectedFeedback(null)}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="space-y-6 p-6">
+        <DetailDrawer
+          title="Feedback Details"
+          description="Complete AI analysis"
+          onClose={() => setSelectedFeedback(null)}
+        >
               {/* Customer Feedback */}
               <section>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -383,9 +362,7 @@ export default function FeedbackHistory() {
                   </div>
                 </section>
               )}
-            </div>
-          </div>
-        </div>
+        </DetailDrawer>
       )}
     </main>
   );

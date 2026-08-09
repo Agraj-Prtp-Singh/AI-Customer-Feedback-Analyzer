@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle, Clock, X } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import api from "../services/api";
+import DetailDrawer from "./DetailDrawer";
+import PageHeader from "./PageHeader";
 
 export default function FollowUpManagement() {
   const [feedback, setFeedback] = useState([]);
@@ -58,16 +60,10 @@ export default function FollowUpManagement() {
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Follow-up Management
-          </h1>
-
-          <p className="mt-1 text-gray-500">
-            Manage customer issues requiring account manager action
-          </p>
-        </div>
+        <PageHeader
+          title="Follow-up Management"
+          description="Manage customer issues requiring account manager action"
+        />
 
         {/* Filters */}
         <div className="mt-8 space-y-4">
@@ -225,30 +221,11 @@ export default function FollowUpManagement() {
         </div>
       </div>
       {selectedFeedback && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/30">
-          <div className="h-full w-full max-w-lg overflow-y-auto bg-white shadow-xl">
-            {/* Header */}
-            <div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-5">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Follow-up Details
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Customer feedback analysis
-                </p>
-              </div>
-
-              <button
-                onClick={() => setSelectedFeedback(null)}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="space-y-6 p-6">
+        <DetailDrawer
+          title="Follow-up Details"
+          description="Customer feedback analysis"
+          onClose={() => setSelectedFeedback(null)}
+        >
               {/* Customer Feedback */}
               <section>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
@@ -453,9 +430,7 @@ export default function FollowUpManagement() {
                   {completing ? "Completing..." : "Mark as Completed"}
                 </button>
               )}
-            </div>
-          </div>
-        </div>
+        </DetailDrawer>
       )}
     </main>
   );
