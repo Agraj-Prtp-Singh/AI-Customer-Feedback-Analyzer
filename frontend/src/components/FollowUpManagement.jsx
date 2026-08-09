@@ -6,6 +6,9 @@ export default function FollowUpManagement() {
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
+  const [sentimentFilter, setSentimentFilter] = useState("All");
+  const [search, setSearch] = useState("");
   const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [completing, setCompleting] = useState(false);
 
@@ -29,9 +32,23 @@ export default function FollowUpManagement() {
   );
 
   const filteredFollowUps = followUps.filter((item) => {
-    if (filter === "All") return true;
+    const matchesStatus = filter === "All" || item.follow_up?.status === filter;
 
-    return item.follow_up?.status === filter;
+    const matchesPriority =
+      priorityFilter === "All" || item.priority === priorityFilter;
+
+    const matchesSentiment =
+      sentimentFilter === "All" || item.sentiment === sentimentFilter;
+
+    const matchesSearch =
+      search.trim() === "" ||
+      item.feedback?.toLowerCase().includes(search.toLowerCase()) ||
+      item.theme?.toLowerCase().includes(search.toLowerCase()) ||
+      item.root_cause?.toLowerCase().includes(search.toLowerCase());
+
+    return (
+      matchesStatus && matchesPriority && matchesSentiment && matchesSearch
+    );
   });
 
   if (loading) {
@@ -53,20 +70,69 @@ export default function FollowUpManagement() {
         </div>
 
         {/* Filters */}
-        <div className="mt-8 flex gap-2">
-          {["All", "Pending", "Overdue", "Completed"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilter(status)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                filter === status
-                  ? "bg-black text-white"
-                  : "bg-white text-gray-600 border border-gray-200"
-              }`}
+        <div className="mt-8 space-y-4">
+          {/* Search */}
+          <div>
+            <input
+              type="text"
+              placeholder="Search feedback, themes, or root causes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-gray-400"
+            />
+          </div>
+
+          {/* Filter controls */}
+          <div className="flex flex-wrap gap-3">
+            {/* Status */}
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 outline-none"
             >
-              {status}
+              <option value="All">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Overdue">Overdue</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+            {/* Priority */}
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 outline-none"
+            >
+              <option value="All">All Priorities</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+
+            {/* Sentiment */}
+            <select
+              value={sentimentFilter}
+              onChange={(e) => setSentimentFilter(e.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 outline-none"
+            >
+              <option value="All">All Sentiments</option>
+              <option value="negative">Negative</option>
+              <option value="neutral">Neutral</option>
+              <option value="positive">Positive</option>
+            </select>
+
+            {/* Clear Filters */}
+            <button
+              onClick={() => {
+                setSearch("");
+                setFilter("All");
+                setPriorityFilter("All");
+                setSentimentFilter("All");
+              }}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+            >
+              Clear Filters
             </button>
-          ))}
+          </div>
         </div>
 
         {/* Follow-up table */}

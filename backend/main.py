@@ -1,3 +1,5 @@
+from bson import ObjectId
+from fastapi import HTTPException
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -72,6 +74,57 @@ def get_feedback():
 
     return feedback
 
+@app.patch("/feedback/{feedback_id}/follow-up")
+def complete_follow_up(feedback_id: str):
+
+    try:
+        object_id = ObjectId(feedback_id)
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid feedback ID"
+        )
+
+    feedback = feedback_collection.find_one({
+        "_id": object_id
+    })
+
+    if not feedback:
+        raise HTTPException(
+            status_code=404,
+            detail="Feedback not found"
+        )
+
+    if not feedback.get("follow_up", {}).get("follow_up_required"):
+        raise HTTPException(
+            status_code=400,
+            detail="This feedback does not require follow-up"
+        )
+
+    result = feedback_collection.update_one(
+        {"_id": object_id},
+        {
+            "$set": {
+                "follow_up.status": "Completed"
+            }
+        }
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Follow-up could not be updated"
+        )
+
+    updated_feedback = feedback_collection.find_one({
+        "_id": object_id
+    })
+
+    updated_feedback["id"] = str(updated_feedback["_id"])
+    del updated_feedback["_id"]
+
+    return updated_feedback
+
 @app.get("/analytics")
 def analytics():
 
@@ -112,3 +165,6 @@ def update_follow_up(feedback_id: str):
         "message": "Follow-up status updated",
         "status": new_status
     }
+
+
+
