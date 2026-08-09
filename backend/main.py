@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from services.ai_analyzer import analyze_feedback
 from services.database import feedback_collection
 from services.analytics import get_analytics
+from services.sla import get_follow_up_status
 
 load_dotenv()
 
@@ -51,6 +52,7 @@ def analyze(data: FeedbackRequest):
 
 @app.get("/feedback")
 def get_feedback():
+
     feedback = list(
         feedback_collection
         .find()
@@ -59,8 +61,14 @@ def get_feedback():
     )
 
     for item in feedback:
+
         item["id"] = str(item["_id"])
         del item["_id"]
+
+        if "follow_up" in item:
+            item["follow_up"]["status"] = get_follow_up_status(
+                item["follow_up"]
+            )
 
     return feedback
 
