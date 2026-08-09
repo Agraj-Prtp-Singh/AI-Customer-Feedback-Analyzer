@@ -31,6 +31,11 @@ export default function FeedbackHistory() {
       }
     } catch (error) {
       console.error("Error deleting feedback:", error);
+
+      const message =
+        error.response?.data?.detail || "Failed to delete feedback.";
+
+      alert(message);
     }
   };
 

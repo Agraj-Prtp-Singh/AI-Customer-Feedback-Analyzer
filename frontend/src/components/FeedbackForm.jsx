@@ -10,6 +10,7 @@ export default function FeedbackForm({ onAnalysisComplete }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (!score || !feedback) {
       setError("Please provide both an NPS score and feedback.");
@@ -18,7 +19,6 @@ export default function FeedbackForm({ onAnalysisComplete }) {
 
     try {
       setLoading(true);
-      setError("");
 
       const response = await api.post("/analyze", {
         score: Number(score),
@@ -31,13 +31,14 @@ export default function FeedbackForm({ onAnalysisComplete }) {
 
       setScore("");
       setFeedback("");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Analysis error:", error);
 
-      setError(
-        err.response?.data?.detail ||
-          "Something went wrong while analyzing the feedback.",
-      );
+      const message =
+        error.response?.data?.detail ||
+        "Something went wrong while analyzing the feedback.";
+
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export default function FeedbackForm({ onAnalysisComplete }) {
 
         {/* Error */}
         {error && (
-          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
             {error}
           </div>
         )}

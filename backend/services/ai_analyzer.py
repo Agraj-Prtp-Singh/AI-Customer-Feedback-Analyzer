@@ -1,7 +1,9 @@
-import requests
-import os
 import json
-from datetime import datetime, timedelta
+import os
+from datetime import datetime
+
+import requests
+
 from services.sla import add_working_days
 
 
@@ -16,7 +18,6 @@ def get_nps_category(score):
 
 def create_follow_up_task(score, feedback):
     if score <= 6:
-
         created_at = datetime.utcnow()
         due_at = add_working_days(created_at, 2)
 
@@ -26,7 +27,7 @@ def create_follow_up_task(score, feedback):
             "task": "Contact customer regarding negative feedback",
             "created_at": created_at,
             "due_at": due_at,
-            "sla": "2 working days"
+            "sla": "2 working days",
         }
 
     return {
@@ -35,9 +36,9 @@ def create_follow_up_task(score, feedback):
         "task": None,
         "created_at": None,
         "due_at": None,
-        "sla": None
+        "sla": None,
     }
-     
+
 
 def _cleanup_ai_content(content):
     if not isinstance(content, str):
@@ -62,6 +63,7 @@ def _extract_json_payload(text):
 
     start = text.find("{")
     end = text.rfind("}")
+
     if start != -1 and end != -1 and end > start:
         return text[start : end + 1].strip()
 
@@ -69,66 +71,81 @@ def _extract_json_payload(text):
 
 
 def analyze_feedback(score, feedback):
-
     nps_category = get_nps_category(score)
 
     api_key = os.getenv("OPENROUTER_API_KEY")
+
     if not api_key:
         raise Exception("OPENROUTER_API_KEY is not configured")
 
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "model": "openrouter/free",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": f"""
-                    Analyze the following customer feedback:
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "openrouter/free",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": f"""
+Analyze the following customer feedback:
 
-                    "{feedback}"
+"{feedback}"
 
-                    Return ONLY valid JSON.
+Return ONLY valid JSON.
 
-                    Use exactly these fields:
+Use exactly these fields:
 
-                    {{
-                        "language": "detected language of the feedback",
-                        "sentiment": "positive, neutral, or negative",
-                        "theme": "main issue category",
-                        "root_cause": "underlying reason for the problem",
-                        "priority": "low, medium, or high"
-                    }}
+{{
+    "language": "detected language of the feedback",
+    "sentiment": "positive, neutral, or negative",
+    "theme": "main issue category",
+    "root_cause": "underlying reason for the problem",
+    "priority": "low, medium, or high"
+}}
 
-                    Detect the language of the customer's feedback.
-                    Write the language name in English, such as "English", "French", "German", "Spanish", etc.
+Detect the language of the customer's feedback.
 
-                    Analyze the feedback regardless of which language it is written in.
+Write the language name in English, such as
+"English", "French", "German", "Spanish", etc.
 
-                    Do not include any explanation outside the JSON.   
-                    """
-                }
-            ]
-        }
-    )
+Analyze the feedback regardless of which language it is written in.
+
+Do not include any explanation outside the JSON.
+""",
+                    }
+                ],
+            },
+            timeout=30,
+        )
+
+    except requests.RequestException as e:
+        raise Exception(f"AI service request failed: {str(e)}")
 
     try:
         data = response.json()
+
     except ValueError:
         raise Exception(
-            f"OpenRouter returned non-JSON response (status {response.status_code}): {response.text!r}"
+            f"OpenRouter returned non-JSON response "
+            f"(status {response.status_code}): {response.text!r}"
         )
 
     if response.status_code != 200:
         raise Exception(
-            f"OpenRouter API error ({response.status_code}): {data.get('error', {}).get('message', response.text)}"
+            f"OpenRouter API error ({response.status_code}): "
+            f"{data.get('error', {}).get('message', response.text)}"
         )
 
-    content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+    content = (
+        data.get("choices", [{}])[0]
+        .get("message", {})
+        .get("content", "")
+    )
+
     cleaned_content = _extract_json_payload(content)
 
     print("AI RESPONSE:")
@@ -136,17 +153,23 @@ def analyze_feedback(score, feedback):
 
     if not cleaned_content:
         raise Exception(
-            f"AI returned empty JSON response; raw content: {repr(content)}"
+            f"AI returned empty JSON response; "
+            f"raw content: {repr(content)}"
         )
 
     try:
         analysis = json.loads(cleaned_content)
+
     except json.JSONDecodeError:
         print("INVALID JSON FROM AI:")
         print(repr(content))
+
         print("CLEANED JSON ATTEMPT:")
         print(repr(cleaned_content))
-        raise Exception(f"AI returned invalid JSON: {repr(cleaned_content)}")
+
+        raise Exception(
+            f"AI returned invalid JSON: {repr(cleaned_content)}"
+        )
 
     follow_up = create_follow_up_task(score, feedback)
 
@@ -161,4 +184,5 @@ def analyze_feedback(score, feedback):
         "priority": analysis["priority"],
         "follow_up": follow_up,
     }
+
     return result

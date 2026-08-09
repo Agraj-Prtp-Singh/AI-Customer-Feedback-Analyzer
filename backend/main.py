@@ -1,4 +1,5 @@
 from bson import ObjectId
+from bson.errors import InvalidId
 from fastapi import HTTPException
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,19 +43,30 @@ def home():
 @app.post("/analyze")
 def analyze(data: FeedbackRequest):
 
-    result = analyze_feedback(
-        data.score,
-        data.feedback
-    )
+    try:
+        result = analyze_feedback(
+            data.score,
+            data.feedback
+        )
 
-    db_result = feedback_collection.insert_one(result.copy())
+        insert_result = feedback_collection.insert_one(
+            result.copy()
+        )
 
-    result_with_id = {
-        **result,
-        "id": str(db_result.inserted_id)
-    }
+        result_with_id = {
+            **result,
+            "id": str(insert_result.inserted_id)
+        }
 
-    return result_with_id
+        return result_with_id
+
+    except Exception as e:
+        print(f"Analysis error: {e}")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to analyze feedback"
+        )
 
 
 @app.get("/feedback")
@@ -183,22 +195,23 @@ def analytics_trend():
 @app.delete("/feedback/{feedback_id}")
 def delete_feedback(feedback_id: str):
     try:
-        result = feedback_collection.delete_one(
-            {"_id": ObjectId(feedback_id)}
-        )
-
-        if result.deleted_count == 0:
-            raise HTTPException(
-                status_code=404,
-                detail="Feedback not found"
-            )
-
-        return {
-            "message": "Feedback deleted successfully"
-        }
-
-    except Exception as e:
+        object_id = ObjectId(feedback_id)
+    except InvalidId:
         raise HTTPException(
-            status_code=500,
-            detail=str(e)
+            status_code=400,
+            detail="Invalid feedback ID"
         )
+
+    result = feedback_collection.delete_one(
+        {"_id": object_id}
+    )
+
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Feedback not found"
+        )
+
+    return {
+        "message": "Feedback deleted successfully"
+    }

@@ -6,9 +6,9 @@ import FollowUpManagement from "./components/FollowUpManagement";
 function App() {
   return (
     <>
-      {/* <Dashboard /> */}
+      <Dashboard />
       {/* <FollowUpManagement /> */}
-      <FeedbackHistory />
+      {/* <FeedbackHistory /> */}
     </>
   );
 }
