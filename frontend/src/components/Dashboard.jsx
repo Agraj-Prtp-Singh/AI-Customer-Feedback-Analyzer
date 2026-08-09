@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const fetchAnalytics = async () => {
     try {
@@ -87,6 +88,7 @@ export default function Dashboard() {
           <FeedbackForm
             onAnalysisComplete={() => {
               fetchAnalytics();
+              setRefreshTrigger((prev) => prev + 1);
             }}
           />
         </div>
@@ -227,7 +229,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <RecentFeedback />
+        <RecentFeedback refreshTrigger={refreshTrigger} />
       </div>
     </main>
   );

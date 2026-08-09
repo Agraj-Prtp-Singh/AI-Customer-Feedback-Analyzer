@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import { X } from "lucide-react";
 
-export default function RecentFeedback() {
+export default function RecentFeedback({ refreshTrigger }) {
   const [feedback, setFeedback] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
@@ -20,7 +20,7 @@ export default function RecentFeedback() {
     };
 
     fetchFeedback();
-  }, []);
+  }, [refreshTrigger]);
 
   if (loading) {
     return (
