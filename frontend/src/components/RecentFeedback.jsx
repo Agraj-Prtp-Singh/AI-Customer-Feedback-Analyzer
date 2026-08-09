@@ -269,14 +269,35 @@ export default function RecentFeedback({ refreshTrigger }) {
                     </div>
 
                     {selectedFeedback.follow_up.status && (
-                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          selectedFeedback.follow_up.status === "Completed"
+                            ? "bg-green-100 text-green-700"
+                            : selectedFeedback.follow_up.status === "Overdue"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
                         {selectedFeedback.follow_up.status}
                       </span>
+                    )}
+
+                    {selectedFeedback.follow_up.status === "Overdue" && (
+                      <div className="mt-4 rounded-lg bg-red-100 p-3">
+                        <p className="text-sm font-semibold text-red-700">
+                          Escalation Required
+                        </p>
+
+                        <p className="mt-1 text-xs text-red-600">
+                          The 2-working-day SLA has been exceeded. This case
+                          should be escalated to the appropriate manager.
+                        </p>
+                      </div>
                     )}
                   </div>
 
                   {/* Mark Completed */}
-                  {selectedFeedback.follow_up.status === "Pending" && (
+                  {selectedFeedback.follow_up.status !== "Completed" && (
                     <button
                       type="button"
                       onClick={handleMarkCompleted}
