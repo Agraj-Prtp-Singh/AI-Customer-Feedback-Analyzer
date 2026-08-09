@@ -97,13 +97,19 @@ def analyze_feedback(score, feedback):
                     Use exactly these fields:
 
                     {{
+                        "language": "detected language of the feedback",
                         "sentiment": "positive, neutral, or negative",
                         "theme": "main issue category",
                         "root_cause": "underlying reason for the problem",
                         "priority": "low, medium, or high"
                     }}
 
-                    Do not include any explanation outside the JSON.
+                    Detect the language of the customer's feedback.
+                    Write the language name in English, such as "English", "French", "German", "Spanish", etc.
+
+                    Analyze the feedback regardless of which language it is written in.
+
+                    Do not include any explanation outside the JSON.   
                     """
                 }
             ]
@@ -146,14 +152,12 @@ def analyze_feedback(score, feedback):
 
     result = {
         "score": score,
-        "feedback": feedback,
         "nps_category": nps_category,
+        "language": analysis["language"],
         "sentiment": analysis["sentiment"],
         "theme": analysis["theme"],
         "root_cause": analysis["root_cause"],
         "priority": analysis["priority"],
-        "follow_up": follow_up,
-        "created_at": datetime.utcnow().isoformat()
+        "follow_up": follow_up
     }
-
     return result
