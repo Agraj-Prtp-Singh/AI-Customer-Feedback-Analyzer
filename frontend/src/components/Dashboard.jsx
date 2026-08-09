@@ -4,6 +4,7 @@ import api from "../services/api";
 import StatCard from "./StatCard";
 import FeedbackForm from "./FeedbackForm";
 import RecentFeedback from "./RecentFeedback";
+import AIInsights from "./AiInsight";
 
 import {
   PieChart,
@@ -16,10 +17,13 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  LineChart,
+  Line,
 } from "recharts";
 
 export default function Dashboard() {
   const [analytics, setAnalytics] = useState(null);
+  const [npsTrend, setNpsTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -28,6 +32,9 @@ export default function Dashboard() {
     try {
       const response = await api.get("/analytics");
       setAnalytics(response.data);
+
+      const trendResponse = await api.get("/analytics/trend");
+      setNpsTrend(trendResponse.data);
     } catch (err) {
       console.error(err);
       setError("Failed to load analytics.");
@@ -231,6 +238,32 @@ export default function Dashboard() {
         </div>
         <RecentFeedback refreshTrigger={refreshTrigger} />
       </div>
+      <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">NPS Trend</h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Monthly Net Promoter Score
+          </p>
+        </div>
+
+        <div className="mt-6 h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={npsTrend}>
+              <CartesianGrid strokeDasharray="3 3" />
+
+              <XAxis dataKey="month" />
+
+              <YAxis />
+
+              <Tooltip />
+
+              <Line type="monotone" dataKey="nps" strokeWidth={2} dot />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+      <AIInsights />
     </main>
   );
 }

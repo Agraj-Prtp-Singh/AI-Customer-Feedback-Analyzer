@@ -7,12 +7,14 @@ from dotenv import load_dotenv
 
 from services.ai_analyzer import analyze_feedback
 from services.database import feedback_collection
-from services.analytics import get_analytics
+from services.analytics import get_analytics, get_nps_trend
 from services.sla import get_follow_up_status
 from services.ai.insights import (
     get_feedback_for_insights,
     generate_ai_insights
 )
+
+
 load_dotenv()
 
 app = FastAPI()
@@ -172,3 +174,7 @@ def update_follow_up(feedback_id: str):
 @app.get("/ai-insights")
 def ai_insights():
     return generate_ai_insights()
+
+@app.get("/analytics/trend")
+def analytics_trend():
+    return get_nps_trend()

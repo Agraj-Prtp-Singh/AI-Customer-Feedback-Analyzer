@@ -22,7 +22,29 @@ def get_feedback_for_insights():
     )
 
     return feedback
+def parse_ai_json(content):
+    content = content.strip()
 
+    # Remove Markdown code fences if the AI adds them
+    if content.startswith("```"):
+        lines = content.splitlines()
+
+        # Remove first line: ```json or ```
+        lines = lines[1:]
+
+        # Remove final ```
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+
+        content = "\n".join(lines).strip()
+
+    try:
+        return json.loads(content)
+
+    except json.JSONDecodeError:
+        raise Exception(
+            f"AI returned invalid JSON:\n{content}"
+        )
 
 def generate_ai_insights():
     feedback = get_feedback_for_insights()
@@ -88,5 +110,5 @@ Do not include any explanation outside the JSON.
         )
 
     content = data["choices"][0]["message"]["content"]
+    return parse_ai_json(content)
 
-    return json.loads(content)
