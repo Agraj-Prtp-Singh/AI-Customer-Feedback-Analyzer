@@ -68,7 +68,9 @@ export default function RecentFeedback({ refreshTrigger }) {
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <p className="text-sm text-gray-500">Loading recent feedback...</p>
+        <p className="text-sm text-gray-500 text-center">
+          Loading recent feedback...
+        </p>
       </div>
     );
   }
@@ -80,7 +82,7 @@ export default function RecentFeedback({ refreshTrigger }) {
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
-            Recent Feedback
+            Feedback Follow Ups
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">

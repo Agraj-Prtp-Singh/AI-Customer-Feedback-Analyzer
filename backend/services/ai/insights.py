@@ -3,6 +3,7 @@ import os
 import json
 
 from services.database import feedback_collection
+from services.ai.errors import AIProviderError
 
 
 def get_feedback_for_insights():
@@ -59,18 +60,25 @@ def generate_ai_insights():
 
     api_key = os.getenv("OPENROUTER_API_KEY")
 
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "model": "openrouter/free",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": f"""
+    if not api_key:
+        raise AIProviderError(
+            503,
+            "AI insights are unavailable because OpenRouter is not configured.",
+        )
+
+    try:
+        response = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "openrouter/free",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": f"""
 Analyze the following customer feedback data.
 
 {feedback_text}
@@ -96,17 +104,35 @@ Include the 3 most important issues at most.
 
 Do not include any explanation outside the JSON.
 """
-                }
-            ]
-        }
-    )
+                    }
+                ]
+            },
+            timeout=30,
+        )
+    except requests.RequestException as e:
+        raise AIProviderError(
+            502,
+            "The AI insights service is unavailable. Please try again later.",
+        ) from e
 
-    data = response.json()
+    try:
+        data = response.json()
+    except ValueError as e:
+        raise AIProviderError(
+            502,
+            "The AI insights service returned an invalid response.",
+        ) from e
 
     if response.status_code != 200:
-        raise Exception(
-            f"OpenRouter API error: "
-            f"{data.get('error', {}).get('message', 'Unknown error')}"
+        if response.status_code == 429:
+            raise AIProviderError(
+                429,
+                "AI request limit reached. Add OpenRouter credits or wait for the quota to reset.",
+            )
+
+        raise AIProviderError(
+            502,
+            "The AI insights service could not process this request.",
         )
 
     content = data["choices"][0]["message"]["content"]

@@ -4,6 +4,7 @@ from datetime import datetime
 
 import requests
 
+from services.ai.errors import AIProviderError
 from services.sla import add_working_days
 
 
@@ -76,7 +77,10 @@ def analyze_feedback(score, feedback):
     api_key = os.getenv("OPENROUTER_API_KEY")
 
     if not api_key:
-        raise Exception("OPENROUTER_API_KEY is not configured")
+        raise AIProviderError(
+            503,
+            "AI analysis is unavailable because OpenRouter is not configured.",
+        )
 
     try:
         response = requests.post(
@@ -123,21 +127,30 @@ Do not include any explanation outside the JSON.
         )
 
     except requests.RequestException as e:
-        raise Exception(f"AI service request failed: {str(e)}")
+        raise AIProviderError(
+            502,
+            "The AI analysis service is unavailable. Please try again later.",
+        ) from e
 
     try:
         data = response.json()
 
-    except ValueError:
-        raise Exception(
-            f"OpenRouter returned non-JSON response "
-            f"(status {response.status_code}): {response.text!r}"
-        )
+    except ValueError as e:
+        raise AIProviderError(
+            502,
+            "The AI analysis service returned an invalid response.",
+        ) from e
 
     if response.status_code != 200:
-        raise Exception(
-            f"OpenRouter API error ({response.status_code}): "
-            f"{data.get('error', {}).get('message', response.text)}"
+        if response.status_code == 429:
+            raise AIProviderError(
+                429,
+                "AI request limit reached. Add OpenRouter credits or wait for the quota to reset.",
+            )
+
+        raise AIProviderError(
+            502,
+            "The AI analysis service could not process this request.",
         )
 
     content = (

@@ -14,7 +14,9 @@ export default function AIInsights() {
         setInsights(response.data);
       } catch (error) {
         console.error("Error fetching AI insights:", error);
-        setError("Failed to load AI insights.");
+        setError(
+          error.response?.data?.detail || "Failed to load AI insights.",
+        );
       } finally {
         setLoading(false);
       }

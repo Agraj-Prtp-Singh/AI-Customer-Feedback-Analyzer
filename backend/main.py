@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 from services.ai_analyzer import analyze_feedback
+from services.ai.errors import AIProviderError
 from services.database import feedback_collection
 from services.analytics import get_analytics, get_nps_trend
 from services.sla import get_follow_up_status
@@ -21,7 +22,10 @@ load_dotenv()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,6 +63,12 @@ def analyze(data: FeedbackRequest):
         }
 
         return result_with_id
+
+    except AIProviderError as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.detail
+        )
 
     except Exception as e:
         print(f"Analysis error: {e}")
@@ -185,7 +195,19 @@ def update_follow_up(feedback_id: str):
 
 @app.get("/ai-insights")
 def ai_insights():
-    return generate_ai_insights()
+    try:
+        return generate_ai_insights()
+    except AIProviderError as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.detail
+        )
+    except Exception as e:
+        print(f"AI insights error: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to generate AI insights. Please try again later."
+        )
 
 @app.get("/analytics/trend")
 def analytics_trend():
