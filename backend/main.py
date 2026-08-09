@@ -64,3 +64,39 @@ def get_feedback():
 def analytics():
 
     return get_analytics()
+
+@app.patch("/feedback/{feedback_id}/follow-up")
+def update_follow_up(feedback_id: str):
+    from bson import ObjectId
+
+    feedback = feedback_collection.find_one(
+        {"_id": ObjectId(feedback_id)}
+    )
+
+    if not feedback:
+        return {"error": "Feedback not found"}
+
+    current_status = feedback.get("follow_up", {}).get(
+        "status",
+        "Pending"
+    )
+
+    new_status = (
+        "Completed"
+        if current_status == "Pending"
+        else "Pending"
+    )
+
+    feedback_collection.update_one(
+        {"_id": ObjectId(feedback_id)},
+        {
+            "$set": {
+                "follow_up.status": new_status
+            }
+        }
+    )
+
+    return {
+        "message": "Follow-up status updated",
+        "status": new_status
+    }
