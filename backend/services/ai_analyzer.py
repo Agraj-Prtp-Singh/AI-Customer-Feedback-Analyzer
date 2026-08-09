@@ -1,7 +1,7 @@
 import requests
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def get_nps_category(score):
@@ -15,15 +15,25 @@ def get_nps_category(score):
 
 def create_follow_up_task(score, feedback):
     if score <= 6:
+
+        created_at = datetime.utcnow()
+        due_at = created_at + timedelta(days=2)
+
         return {
             "follow_up_required": True,
+            "status": "Pending",
             "task": "Contact customer regarding negative feedback",
+            "created_at": created_at,
+            "due_at": due_at,
             "sla": "2 working days"
         }
 
     return {
         "follow_up_required": False,
+        "status": "Not Required",
         "task": None,
+        "created_at": None,
+        "due_at": None,
         "sla": None
     }
      
