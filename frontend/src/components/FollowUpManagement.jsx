@@ -292,6 +292,13 @@ export default function FollowUpManagement() {
 
                 <div className="mt-3 space-y-3">
                   <div className="flex justify-between rounded-lg bg-gray-50 p-3">
+                    <span className="text-sm text-gray-500">Language</span>
+
+                    <span className="text-sm font-medium">
+                      {selectedFeedback.language || "Unknown"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between rounded-lg bg-gray-50 p-3">
                     <span className="text-sm text-gray-500">Sentiment</span>
 
                     <span className="text-sm font-medium capitalize">
