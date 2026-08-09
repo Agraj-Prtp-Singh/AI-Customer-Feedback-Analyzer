@@ -9,7 +9,10 @@ from services.ai_analyzer import analyze_feedback
 from services.database import feedback_collection
 from services.analytics import get_analytics
 from services.sla import get_follow_up_status
-
+from services.ai.insights import (
+    get_feedback_for_insights,
+    generate_ai_insights
+)
 load_dotenv()
 
 app = FastAPI()
@@ -166,5 +169,6 @@ def update_follow_up(feedback_id: str):
         "status": new_status
     }
 
-
-
+@app.get("/ai-insights")
+def ai_insights():
+    return generate_ai_insights()

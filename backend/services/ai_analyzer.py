@@ -152,12 +152,13 @@ def analyze_feedback(score, feedback):
 
     result = {
         "score": score,
+        "feedback": feedback,
         "nps_category": nps_category,
         "language": analysis["language"],
         "sentiment": analysis["sentiment"],
         "theme": analysis["theme"],
         "root_cause": analysis["root_cause"],
         "priority": analysis["priority"],
-        "follow_up": follow_up
+        "follow_up": follow_up,
     }
     return result

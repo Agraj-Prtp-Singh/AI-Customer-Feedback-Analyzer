@@ -143,6 +143,9 @@ export default function FollowUpManagement() {
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                   Customer Feedback
                 </th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                  Language
+                </th>
 
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                   Score
