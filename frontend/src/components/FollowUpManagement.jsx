@@ -7,6 +7,7 @@ export default function FollowUpManagement() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
   const [selectedFeedback, setSelectedFeedback] = useState(null);
+  const [completing, setCompleting] = useState(false);
 
   useEffect(() => {
     const fetchFeedback = async () => {
@@ -344,9 +345,36 @@ export default function FollowUpManagement() {
 
               {/* Complete button */}
               {selectedFeedback.follow_up.status !== "Completed" && (
-                <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-3 text-sm font-medium text-white hover:bg-gray-800">
+                <button
+                  onClick={async () => {
+                    try {
+                      setCompleting(true);
+
+                      const response = await api.patch(
+                        `/feedback/${selectedFeedback.id}/follow-up`,
+                      );
+
+                      const updatedFeedback = response.data;
+
+                      setSelectedFeedback(updatedFeedback);
+
+                      setFeedback((prev) =>
+                        prev.map((item) =>
+                          item.id === updatedFeedback.id
+                            ? updatedFeedback
+                            : item,
+                        ),
+                      );
+                    } catch (error) {
+                      console.error("Error completing follow-up:", error);
+                    } finally {
+                      setCompleting(false);
+                    }
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-3 text-sm font-medium text-white hover:bg-gray-800"
+                >
                   <CheckCircle size={17} />
-                  Mark as Completed
+                  {completing ? "Completing..." : "Mark as Completed"}
                 </button>
               )}
             </div>
