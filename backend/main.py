@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
@@ -9,6 +10,13 @@ from services.analytics import get_analytics
 load_dotenv()
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class FeedbackRequest(BaseModel):
@@ -43,16 +51,16 @@ def analyze(data: FeedbackRequest):
 
 @app.get("/feedback")
 def get_feedback():
-
-    feedback = list(feedback_collection.find().sort("created_at", -1))
-
-    for item in feedback:
-        item["id"] = str(item["_id"])
-        del item["_id"]
+    feedback = list(
+        feedback_collection
+        .find({}, {"_id": 0})
+        .sort("_id", -1)
+        .limit(10)
+    )
 
     return feedback
 
 @app.get("/analytics")
-def get_analytics():
+def analytics():
 
     return get_analytics()
