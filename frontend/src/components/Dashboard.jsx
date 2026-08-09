@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [recentFeedback, setRecentFeedback] = useState([]);
 
   const fetchAnalytics = async () => {
     try {
@@ -35,6 +36,10 @@ export default function Dashboard() {
 
       const trendResponse = await api.get("/analytics/trend");
       setNpsTrend(trendResponse.data);
+
+      const feedbackResponse = await api.get("/feedback");
+
+      setRecentFeedback(feedbackResponse.data.slice(0, 5));
     } catch (err) {
       console.error(err);
       setError("Failed to load analytics.");
@@ -201,6 +206,50 @@ export default function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+          </div>
+        </div>
+        <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Recent Feedback
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Latest customer responses
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 divide-y divide-gray-100">
+            {recentFeedback.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between gap-6 py-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-gray-800">
+                    {item.feedback || "No feedback provided."}
+                  </p>
+
+                  <p className="mt-1 text-xs text-gray-500">{item.theme}</p>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-semibold">{item.score}/10</span>
+
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium capitalize">
+                    {item.sentiment}
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            {recentFeedback.length === 0 && (
+              <p className="py-8 text-center text-sm text-gray-500">
+                No feedback available.
+              </p>
+            )}
           </div>
         </div>
 
