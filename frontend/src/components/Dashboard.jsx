@@ -3,6 +3,7 @@ import { BarChart3, AlertCircle } from "lucide-react";
 import api from "../services/api";
 import StatCard from "./StatCard";
 import FeedbackForm from "./FeedbackForm";
+import RecentFeedback from "./RecentFeedback";
 
 import {
   PieChart,
@@ -226,6 +227,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        <RecentFeedback />
       </div>
     </main>
   );
