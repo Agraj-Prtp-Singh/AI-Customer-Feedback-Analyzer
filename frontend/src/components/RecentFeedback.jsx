@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import { X } from "lucide-react";
+import { X, CheckCircle } from "lucide-react";
 
 export default function RecentFeedback({ refreshTrigger }) {
   const [feedback, setFeedback] = useState([]);
@@ -10,10 +10,15 @@ export default function RecentFeedback({ refreshTrigger }) {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
+        setLoading(true);
+
         const response = await api.get("/feedback");
-        setFeedback(response.data);
+
+        // Make sure feedback is always an array
+        setFeedback(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
         console.error("Error fetching feedback:", err);
+        setFeedback([]);
       } finally {
         setLoading(false);
       }
@@ -22,9 +27,47 @@ export default function RecentFeedback({ refreshTrigger }) {
     fetchFeedback();
   }, [refreshTrigger]);
 
+  const handleMarkCompleted = async () => {
+    if (!selectedFeedback?.id) return;
+
+    try {
+      const response = await api.patch(
+        `/feedback/${selectedFeedback.id}/follow-up`,
+      );
+
+      const updatedStatus = response.data.status;
+
+      // Update selected feedback inside modal
+      setSelectedFeedback((previous) => ({
+        ...previous,
+        follow_up: {
+          ...previous.follow_up,
+          status: updatedStatus,
+        },
+      }));
+
+      // Update feedback list
+      setFeedback((previous) =>
+        previous.map((item) =>
+          item.id === selectedFeedback.id
+            ? {
+                ...item,
+                follow_up: {
+                  ...item.follow_up,
+                  status: updatedStatus,
+                },
+              }
+            : item,
+        ),
+      );
+    } catch (err) {
+      console.error("Error updating follow-up:", err);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6">
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
         <p className="text-sm text-gray-500">Loading recent feedback...</p>
       </div>
     );
@@ -32,7 +75,9 @@ export default function RecentFeedback({ refreshTrigger }) {
 
   return (
     <>
-      <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      {/* Recent Feedback Card */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        {/* Header */}
         <div className="mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
             Recent Feedback
@@ -43,11 +88,15 @@ export default function RecentFeedback({ refreshTrigger }) {
           </p>
         </div>
 
+        {/* Empty State */}
         {feedback.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No feedback has been submitted yet.
-          </p>
+          <div className="py-8 text-center">
+            <p className="text-sm text-gray-500">
+              No feedback has been submitted yet.
+            </p>
+          </div>
         ) : (
+          /* Feedback Table */
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
@@ -64,20 +113,36 @@ export default function RecentFeedback({ refreshTrigger }) {
               <tbody>
                 {feedback.map((item, index) => (
                   <tr
-                    key={index}
+                    key={item.id ?? index}
                     onClick={() => setSelectedFeedback(item)}
                     className="cursor-pointer border-b border-gray-100 transition hover:bg-gray-50 last:border-0"
                   >
-                    <td className="py-4 pr-6 font-semibold">{item.score}</td>
+                    {/* Score */}
+                    <td className="py-4 pr-6 font-semibold text-gray-900">
+                      {item.score ?? "-"}
+                    </td>
 
-                    <td className="py-4 pr-6">{item.nps_category}</td>
+                    {/* NPS */}
+                    <td className="py-4 pr-6 text-gray-700">
+                      {item.nps_category ?? "-"}
+                    </td>
 
-                    <td className="py-4 pr-6 capitalize">{item.sentiment}</td>
+                    {/* Sentiment */}
+                    <td className="py-4 pr-6 capitalize text-gray-700">
+                      {item.sentiment ?? "-"}
+                    </td>
 
-                    <td className="py-4 pr-6 capitalize">{item.theme}</td>
+                    {/* Theme */}
+                    <td className="py-4 pr-6 capitalize text-gray-700">
+                      {item.theme ?? "-"}
+                    </td>
 
-                    <td className="py-4 pr-6 capitalize">{item.priority}</td>
+                    {/* Priority */}
+                    <td className="py-4 pr-6 capitalize text-gray-700">
+                      {item.priority ?? "-"}
+                    </td>
 
+                    {/* Follow-up */}
                     <td className="py-4">
                       {item.follow_up?.follow_up_required ? (
                         <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600">
@@ -99,117 +164,150 @@ export default function RecentFeedback({ refreshTrigger }) {
 
       {/* Detail Modal */}
       {selectedFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setSelectedFeedback(null)}
+        >
+          <div
+            className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Feedback Analysis
-                </h2>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Feedback Details
+                </h3>
 
                 <p className="mt-1 text-sm text-gray-500">
-                  AI-generated customer feedback analysis
+                  Customer feedback analysis
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={() => setSelectedFeedback(null)}
-                className="rounded-lg p-2 text-gray-500 hover:bg-gray-100"
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"
+                aria-label="Close modal"
               >
                 <X size={20} />
               </button>
             </div>
 
-            {/* NPS */}
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="rounded-lg bg-gray-50 p-4">
-                <p className="text-xs text-gray-500">NPS Score</p>
-
-                <p className="mt-1 text-2xl font-bold">
-                  {selectedFeedback.score}
+            {/* Feedback Details */}
+            <div className="mt-6 space-y-4">
+              {/* Score */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Score
+                </p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">
+                  {selectedFeedback.score ?? "-"}
                 </p>
               </div>
 
-              <div className="rounded-lg bg-gray-50 p-4">
-                <p className="text-xs text-gray-500">Category</p>
-
-                <p className="mt-1 font-semibold">
-                  {selectedFeedback.nps_category}
+              {/* NPS */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  NPS Category
+                </p>
+                <p className="mt-1 capitalize text-gray-900">
+                  {selectedFeedback.nps_category ?? "-"}
                 </p>
               </div>
 
-              <div className="rounded-lg bg-gray-50 p-4">
-                <p className="text-xs text-gray-500">Sentiment</p>
-
-                <p className="mt-1 capitalize font-semibold">
-                  {selectedFeedback.sentiment}
+              {/* Sentiment */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Sentiment
+                </p>
+                <p className="mt-1 capitalize text-gray-900">
+                  {selectedFeedback.sentiment ?? "-"}
                 </p>
               </div>
 
-              <div className="rounded-lg bg-gray-50 p-4">
-                <p className="text-xs text-gray-500">Priority</p>
-
-                <p className="mt-1 capitalize font-semibold">
-                  {selectedFeedback.priority}
+              {/* Theme */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Theme
+                </p>
+                <p className="mt-1 capitalize text-gray-900">
+                  {selectedFeedback.theme ?? "-"}
                 </p>
               </div>
-            </div>
 
-            {/* Customer Feedback */}
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold text-gray-900">
-                Customer Feedback
-              </h3>
-
-              <div className="mt-2 rounded-lg bg-gray-50 p-4">
-                <p className="text-sm leading-6 text-gray-700">
-                  {selectedFeedback.feedback}
+              {/* Priority */}
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Priority
+                </p>
+                <p className="mt-1 capitalize text-gray-900">
+                  {selectedFeedback.priority ?? "-"}
                 </p>
               </div>
-            </div>
 
-            {/* AI Analysis */}
-            <div className="mt-6">
-              <h3 className="text-sm font-semibold text-gray-900">
-                AI Analysis
-              </h3>
+              {/* Follow-up Section */}
+              {selectedFeedback.follow_up?.follow_up_required && (
+                <div className="rounded-lg bg-red-50 p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-red-700">
+                        Follow-up Required
+                      </p>
 
-              <div className="mt-3 space-y-3">
-                <div>
-                  <p className="text-xs text-gray-500">Theme</p>
+                      {selectedFeedback.follow_up.task && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {selectedFeedback.follow_up.task}
+                        </p>
+                      )}
 
-                  <p className="mt-1 capitalize text-sm font-medium">
-                    {selectedFeedback.theme}
-                  </p>
+                      {selectedFeedback.follow_up.sla && (
+                        <p className="mt-1 text-xs text-red-500">
+                          SLA: {selectedFeedback.follow_up.sla}
+                        </p>
+                      )}
+                    </div>
+
+                    {selectedFeedback.follow_up.status && (
+                      <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-700">
+                        {selectedFeedback.follow_up.status}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Mark Completed */}
+                  {selectedFeedback.follow_up.status === "Pending" && (
+                    <button
+                      type="button"
+                      onClick={handleMarkCompleted}
+                      className="mt-4 flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
+                    >
+                      <CheckCircle size={16} />
+                      Mark as Completed
+                    </button>
+                  )}
+
+                  {/* Completed Message */}
+                  {selectedFeedback.follow_up.status === "Completed" && (
+                    <div className="mt-4 flex items-center gap-2 text-sm font-medium text-green-600">
+                      <CheckCircle size={16} />
+                      Follow-up completed
+                    </div>
+                  )}
                 </div>
-
-                <div>
-                  <p className="text-xs text-gray-500">Root Cause</p>
-
-                  <p className="mt-1 text-sm text-gray-700">
-                    {selectedFeedback.root_cause}
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Follow-up */}
-            {selectedFeedback.follow_up?.follow_up_required && (
-              <div className="mt-6 rounded-lg bg-red-50 p-4">
-                <p className="text-sm font-semibold text-red-700">
-                  Follow-up Required
-                </p>
-
-                <p className="mt-1 text-sm text-red-600">
-                  {selectedFeedback.follow_up.task}
-                </p>
-
-                <p className="mt-1 text-xs text-red-500">
-                  SLA: {selectedFeedback.follow_up.sla}
-                </p>
-              </div>
-            )}
+            {/* Close Button */}
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setSelectedFeedback(null)}
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
