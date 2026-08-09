@@ -35,6 +35,8 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    // The request resolves asynchronously; state is not updated during this effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchAnalytics();
   }, []);
 
