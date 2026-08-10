@@ -196,50 +196,6 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                Recent Feedback
-              </h2>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Latest customer responses
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 divide-y divide-gray-100">
-            {recentFeedback.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-6 py-4"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-800">
-                    {item.feedback || "No feedback provided."}
-                  </p>
-
-                  <p className="mt-1 text-xs text-gray-500">{item.theme}</p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-semibold">{item.score}/10</span>
-
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium capitalize">
-                    {item.sentiment}
-                  </span>
-                </div>
-              </div>
-            ))}
-
-            {recentFeedback.length === 0 && (
-              <p className="py-8 text-center text-sm text-gray-500">
-                No feedback available.
-              </p>
-            )}
-          </div>
-        </div>
 
         {/* Follow-up */}
         <div className="mt-6 mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">

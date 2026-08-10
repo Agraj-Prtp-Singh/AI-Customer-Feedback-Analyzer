@@ -154,10 +154,6 @@ export default function FollowUpManagement() {
                 <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                   Status
                 </th>
-
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Action
-                </th>
               </tr>
             </thead>
 
@@ -226,210 +222,208 @@ export default function FollowUpManagement() {
           description="Customer feedback analysis"
           onClose={() => setSelectedFeedback(null)}
         >
-              {/* Customer Feedback */}
-              <section>
+          {/* Customer Feedback */}
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Customer Feedback
+            </p>
+
+            <div className="mt-2 rounded-lg bg-gray-50 p-4">
+              <p className="text-sm leading-6 text-gray-800">
+                {selectedFeedback.feedback}
+              </p>
+            </div>
+          </section>
+
+          {/* NPS */}
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              NPS Information
+            </p>
+
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-lg border border-gray-200 p-4">
+                <p className="text-xs text-gray-500">Score</p>
+
+                <p className="mt-1 text-2xl font-bold">
+                  {selectedFeedback.score}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 p-4">
+                <p className="text-xs text-gray-500">Category</p>
+
+                <p className="mt-1 font-semibold text-red-600">
+                  {selectedFeedback.nps_category}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* AI Analysis */}
+          <section>
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+              AI Analysis
+            </p>
+
+            <div className="mt-3 space-y-3">
+              <div className="flex justify-between rounded-lg bg-gray-50 p-3">
+                <span className="text-sm text-gray-500">Language</span>
+
+                <span className="text-sm font-medium">
+                  {selectedFeedback.language || "Unknown"}
+                </span>
+              </div>
+              <div className="flex justify-between rounded-lg bg-gray-50 p-3">
+                <span className="text-sm text-gray-500">Sentiment</span>
+
+                <span className="text-sm font-medium capitalize">
+                  {selectedFeedback.sentiment}
+                </span>
+              </div>
+
+              <div className="flex justify-between rounded-lg bg-gray-50 p-3">
+                <span className="text-sm text-gray-500">Theme</span>
+
+                <span className="text-sm font-medium capitalize">
+                  {selectedFeedback.theme}
+                </span>
+              </div>
+
+              <div className="rounded-lg bg-gray-50 p-3">
+                <span className="text-sm text-gray-500">Root Cause</span>
+
+                <p className="mt-1 text-sm font-medium text-gray-800">
+                  {selectedFeedback.root_cause}
+                </p>
+              </div>
+
+              <div className="flex justify-between rounded-lg bg-gray-50 p-3">
+                <span className="text-sm text-gray-500">Priority</span>
+
+                <span className="text-sm font-semibold capitalize text-red-600">
+                  {selectedFeedback.priority}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* Follow-up */}
+          <section>
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Customer Feedback
+                  Follow-up
                 </p>
 
-                <div className="mt-2 rounded-lg bg-gray-50 p-4">
-                  <p className="text-sm leading-6 text-gray-800">
-                    {selectedFeedback.feedback}
+                <p className="mt-1 text-sm text-gray-500">
+                  Account manager action
+                </p>
+              </div>
+
+              {selectedFeedback.follow_up.status === "Overdue" ? (
+                <span className="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                  <AlertTriangle size={14} />
+                  Overdue
+                </span>
+              ) : selectedFeedback.follow_up.status === "Completed" ? (
+                <span className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                  <CheckCircle size={14} />
+                  Completed
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                  <Clock size={14} />
+                  Pending
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div className="rounded-lg border border-gray-200 p-4">
+                <p className="text-xs text-gray-500">Task</p>
+
+                <p className="mt-1 text-sm font-medium text-gray-800">
+                  {selectedFeedback.follow_up.task}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-xs text-gray-500">SLA</p>
+
+                  <p className="mt-1 text-sm font-semibold">
+                    {selectedFeedback.follow_up.sla}
                   </p>
                 </div>
-              </section>
 
-              {/* NPS */}
-              <section>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  NPS Information
-                </p>
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <p className="text-xs text-gray-500">Due</p>
 
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-xs text-gray-500">Score</p>
-
-                    <p className="mt-1 text-2xl font-bold">
-                      {selectedFeedback.score}
-                    </p>
-                  </div>
-
-                  <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-xs text-gray-500">Category</p>
-
-                    <p className="mt-1 font-semibold text-red-600">
-                      {selectedFeedback.nps_category}
-                    </p>
-                  </div>
+                  <p className="mt-1 text-sm font-semibold">
+                    {selectedFeedback.follow_up.due_at
+                      ? new Date(
+                          selectedFeedback.follow_up.due_at,
+                        ).toLocaleDateString()
+                      : "—"}
+                  </p>
                 </div>
-              </section>
+              </div>
+            </div>
+          </section>
 
-              {/* AI Analysis */}
-              <section>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  AI Analysis
-                </p>
+          {/* Escalation */}
+          {selectedFeedback.follow_up.status === "Overdue" && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle size={20} className="mt-0.5 text-red-600" />
 
-                <div className="mt-3 space-y-3">
-                  <div className="flex justify-between rounded-lg bg-gray-50 p-3">
-                    <span className="text-sm text-gray-500">Language</span>
+                <div>
+                  <p className="text-sm font-semibold text-red-700">
+                    Escalation Required
+                  </p>
 
-                    <span className="text-sm font-medium">
-                      {selectedFeedback.language || "Unknown"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between rounded-lg bg-gray-50 p-3">
-                    <span className="text-sm text-gray-500">Sentiment</span>
-
-                    <span className="text-sm font-medium capitalize">
-                      {selectedFeedback.sentiment}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between rounded-lg bg-gray-50 p-3">
-                    <span className="text-sm text-gray-500">Theme</span>
-
-                    <span className="text-sm font-medium capitalize">
-                      {selectedFeedback.theme}
-                    </span>
-                  </div>
-
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <span className="text-sm text-gray-500">Root Cause</span>
-
-                    <p className="mt-1 text-sm font-medium text-gray-800">
-                      {selectedFeedback.root_cause}
-                    </p>
-                  </div>
-
-                  <div className="flex justify-between rounded-lg bg-gray-50 p-3">
-                    <span className="text-sm text-gray-500">Priority</span>
-
-                    <span className="text-sm font-semibold capitalize text-red-600">
-                      {selectedFeedback.priority}
-                    </span>
-                  </div>
+                  <p className="mt-1 text-sm text-red-600">
+                    The 2-working-day SLA has been exceeded. This case should be
+                    escalated to the appropriate manager.
+                  </p>
                 </div>
-              </section>
+              </div>
+            </div>
+          )}
 
-              {/* Follow-up */}
-              <section>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                      Follow-up
-                    </p>
+          {/* Complete button */}
+          {selectedFeedback.follow_up.status !== "Completed" && (
+            <button
+              onClick={async () => {
+                try {
+                  setCompleting(true);
 
-                    <p className="mt-1 text-sm text-gray-500">
-                      Account manager action
-                    </p>
-                  </div>
+                  const response = await api.patch(
+                    `/feedback/${selectedFeedback.id}/follow-up`,
+                  );
 
-                  {selectedFeedback.follow_up.status === "Overdue" ? (
-                    <span className="flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-                      <AlertTriangle size={14} />
-                      Overdue
-                    </span>
-                  ) : selectedFeedback.follow_up.status === "Completed" ? (
-                    <span className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                      <CheckCircle size={14} />
-                      Completed
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                      <Clock size={14} />
-                      Pending
-                    </span>
-                  )}
-                </div>
+                  const updatedFeedback = response.data;
 
-                <div className="mt-4 space-y-3">
-                  <div className="rounded-lg border border-gray-200 p-4">
-                    <p className="text-xs text-gray-500">Task</p>
+                  setSelectedFeedback(updatedFeedback);
 
-                    <p className="mt-1 text-sm font-medium text-gray-800">
-                      {selectedFeedback.follow_up.task}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-gray-200 p-4">
-                      <p className="text-xs text-gray-500">SLA</p>
-
-                      <p className="mt-1 text-sm font-semibold">
-                        {selectedFeedback.follow_up.sla}
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-gray-200 p-4">
-                      <p className="text-xs text-gray-500">Due</p>
-
-                      <p className="mt-1 text-sm font-semibold">
-                        {selectedFeedback.follow_up.due_at
-                          ? new Date(
-                              selectedFeedback.follow_up.due_at,
-                            ).toLocaleDateString()
-                          : "—"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Escalation */}
-              {selectedFeedback.follow_up.status === "Overdue" && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle size={20} className="mt-0.5 text-red-600" />
-
-                    <div>
-                      <p className="text-sm font-semibold text-red-700">
-                        Escalation Required
-                      </p>
-
-                      <p className="mt-1 text-sm text-red-600">
-                        The 2-working-day SLA has been exceeded. This case
-                        should be escalated to the appropriate manager.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Complete button */}
-              {selectedFeedback.follow_up.status !== "Completed" && (
-                <button
-                  onClick={async () => {
-                    try {
-                      setCompleting(true);
-
-                      const response = await api.patch(
-                        `/feedback/${selectedFeedback.id}/follow-up`,
-                      );
-
-                      const updatedFeedback = response.data;
-
-                      setSelectedFeedback(updatedFeedback);
-
-                      setFeedback((prev) =>
-                        prev.map((item) =>
-                          item.id === updatedFeedback.id
-                            ? updatedFeedback
-                            : item,
-                        ),
-                      );
-                    } catch (error) {
-                      console.error("Error completing follow-up:", error);
-                    } finally {
-                      setCompleting(false);
-                    }
-                  }}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-3 text-sm font-medium text-white hover:bg-gray-800"
-                >
-                  <CheckCircle size={17} />
-                  {completing ? "Completing..." : "Mark as Completed"}
-                </button>
-              )}
+                  setFeedback((prev) =>
+                    prev.map((item) =>
+                      item.id === updatedFeedback.id ? updatedFeedback : item,
+                    ),
+                  );
+                } catch (error) {
+                  console.error("Error completing follow-up:", error);
+                } finally {
+                  setCompleting(false);
+                }
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-3 text-sm font-medium text-white hover:bg-gray-800"
+            >
+              <CheckCircle size={17} />
+              {completing ? "Completing..." : "Mark as Completed"}
+            </button>
+          )}
         </DetailDrawer>
       )}
     </main>
